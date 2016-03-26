@@ -2,17 +2,25 @@ function FlowMap(w, h, cellSize) {
   this.w = w;
   this.h = h;
   this.cellSize = cellSize;
-  this.cells = [];
   this.goals = [];
   
-  for(var x=0; x<this.w; x++) {
-    this.cells[x] = [];
-    for(var y=0; y<this.h; y++) {
-      if(x === 0 || x === w-1 || y === 0 || y === h-1) this.cells[x][y] = FlowMap.IMPASSABLE;
-      else if (Math.random() < 0.45) this.cells[x][y] = FlowMap.IMPASSABLE;
-      else this.cells[x][y] = FlowMap.PASSABLE;
-    }
+  this.reset();
+
+  var self = this;
+  var mapCellular = new ROT.Map.Cellular(this.w, this.h);
+
+  mapCellular.randomize(0.55);
+  for(var cint=0; cint<20; cint++) {
+    mapCellular.create(function (x, y, type) {
+      // All edges are impassable.
+      if(x <= 0 || x >= self.w-1) mapCellular.set(x, y, 1);
+      if(y <= 0 || y >= self.h-1) mapCellular.set(x, y, 1);
+    });
   }
+
+  mapCellular.connect(function (x, y, type) {
+    self.cells[x][y] = type === 1 ? FlowMap.IMPASSABLE : FlowMap.PASSABLE;
+  }, 0);
 }
 
 FlowMap.PASSABLE = -1;
@@ -37,8 +45,20 @@ FlowMap.prototype.setGoal = function (x, y) {
   this.goals.push([x,y]);
 };
 
-FlowMap.prototype.reset = function () {
+FlowMap.prototype.randomize = function () {
   for(var x=0; x<this.w; x++) {
+    for(var y=0; y<this.h; y++) {
+      if(x === 0 || x === w-1 || y === 0 || y === h-1) this.cells[x][y] = FlowMap.IMPASSABLE;
+      else if (Math.random() < 0.45) this.cells[x][y] = FlowMap.IMPASSABLE;
+      else this.cells[x][y] = FlowMap.PASSABLE;
+    }
+  }
+};
+
+FlowMap.prototype.reset = function () {
+  this.cells = [];
+  for(var x=0; x<this.w; x++) {
+    this.cells[x] = [];
     for(var y=0; y<this.h; y++) {
       if(this.cells[x][y] !== FlowMap.IMPASSABLE) this.cells[x][y] = FlowMap.PASSABLE; 
     }
@@ -53,7 +73,8 @@ FlowMap.prototype.getCell = function (x, y) {
 
 FlowMap.prototype.setCell = function (x, y, value) {
   if(x<0 || x>this.w-1 || y<0 || y>this.h-1) return false;
-  return this.cells[x][y] = value;
+  this.cells[x][y] = value;
+  return this.cells[x][y];
 };
 
 FlowMap.prototype.forEachNeighbor = function (x, y, callback, cardinal) {
@@ -84,22 +105,20 @@ FlowMap.prototype.getLowest = function(x, y) {
 };
 
 FlowMap.prototype.update = function (iterations) {
+  
   var visited = {},
       visiting,
       next = this.goals.slice(0), 
       self = this, 
       n = 0, 
       pos,
-      i;
+      i, v;
 
   function __queueNeighbor(oldX, oldY, cell, newX, newY) {
     if(visited[newX+'_'+newY]) {
       return;
     }
     if(visiting[newX+'_'+newY]) {
-      return;
-    }
-    if(self.getCell(newX, newY) === FlowMap.IMPASSABLE) {
       return;
     }
 
@@ -109,18 +128,23 @@ FlowMap.prototype.update = function (iterations) {
   }
 
   for(i=0; i<iterations; i++) {
+    
     visiting = next;
     next = {};
 
-    for(var v in visiting) {
+    for(v in visiting) {
+      console.log('top');
+      if(!visiting.hasOwnProperty(v)) continue;
+
       pos = visiting[v];
 
       visited[pos[0]+'_'+pos[1]] = true;
       this.cells[pos[0]][pos[1]] = i;
       
       this.forEachNeighbor(pos[0], pos[1], __queueNeighbor);
+      
+      console.log('bottom');
     }
   }
-
   console.log('crawled over ', n, ' cells.');
 };

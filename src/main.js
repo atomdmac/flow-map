@@ -23,10 +23,10 @@ Agent.prototype.draw = function (ctx) {
   ctx.beginPath();
   ctx.fillStyle = "#0ff";
   ctx.rect(this.x*this.map.cellSize, this.y*this.map.cellSize, this.map.cellSize, this.map.cellSize);
-  ctx.strokeStyle = "#000";
-  ctx.stroke();
+  // ctx.strokeStyle = "#000";
+  // ctx.stroke();
   ctx.fill();
-}
+};
 
 var Simulation = {
   interval: null,
@@ -82,7 +82,6 @@ function main () {
   updateCount = 0;
   itrCount = 0;
   var startTime = new Date(), endTime;
-  m.reset();
   
   var goal, numOfGoals = 1;
   for(var i=0; i<numOfGoals; i++) {
