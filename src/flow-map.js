@@ -133,7 +133,6 @@ FlowMap.prototype.update = function (iterations) {
     next = {};
 
     for(v in visiting) {
-      console.log('top');
       if(!visiting.hasOwnProperty(v)) continue;
 
       pos = visiting[v];
@@ -142,8 +141,6 @@ FlowMap.prototype.update = function (iterations) {
       this.cells[pos[0]][pos[1]] = i;
       
       this.forEachNeighbor(pos[0], pos[1], __queueNeighbor);
-      
-      console.log('bottom');
     }
   }
   console.log('crawled over ', n, ' cells.');
