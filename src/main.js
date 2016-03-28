@@ -43,7 +43,7 @@ var Simulation = {
   },
   update: function () {
     var agent;
-    // r.draw(ctx);
+    r.draw(ctx);
     for(var i=0; i<this.agents.length; i++) {
       agent = this.agents[i];
       if(!agent.active) continue;
@@ -91,10 +91,10 @@ function main () {
     };
     m.setGoal(goal.x, goal.y);
   }
-  
-  m.update(50);
+
+  m.update();
   r.draw(ctx, m);
-  // console.log('Refeshed and searched ', updateCount, ' cells over ', itrCount, ' iterations in ', Number(new Date() - startTime), 'ms');
+  console.log('Refeshed in ', Number(new Date() - startTime), 'ms');
   
   Simulation.start();
 }

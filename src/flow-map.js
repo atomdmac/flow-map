@@ -23,7 +23,7 @@ function FlowMap(w, h, cellSize) {
   }, 0);
 }
 
-FlowMap.PASSABLE = -1;
+FlowMap.PASSABLE = 999;
 FlowMap.IMPASSABLE = -2;
 FlowMap.GOAL = 0;
 FlowMap.directions = [
@@ -104,44 +104,23 @@ FlowMap.prototype.getLowest = function(x, y) {
     return lowestCell;
 };
 
-FlowMap.prototype.update = function (iterations) {
-  
-  var visited = {},
-      visiting,
-      next = this.goals.slice(0), 
-      self = this, 
-      n = 0, 
-      pos,
-      i, v;
-
-  function __queueNeighbor(oldX, oldY, cell, newX, newY) {
-    if(visited[newX+'_'+newY]) {
-      return;
-    }
-    if(visiting[newX+'_'+newY]) {
-      return;
-    }
-
-    n++;
-    next[newX+'_'+newY] = [newX, newY];
-
+FlowMap.prototype.update = function () {
+  var cell, lowest, lowestDefault = this.w*this.h, changed = false;
+  function processCell (x, y, neighbor) {
+    if(neighbor<lowest) lowest = neighbor;
   }
-
-  for(i=0; i<iterations; i++) {
-    
-    visiting = next;
-    next = {};
-
-    for(v in visiting) {
-      if(!visiting.hasOwnProperty(v)) continue;
-
-      pos = visiting[v];
-
-      visited[pos[0]+'_'+pos[1]] = true;
-      this.cells[pos[0]][pos[1]] = i;
-      
-      this.forEachNeighbor(pos[0], pos[1], __queueNeighbor);
+  for(var x=0; x<this.w; x++) {
+    for(var y=0; y<this.h; y++) {
+      lowest = lowestDefault;
+      this.forEachNeighbor(x, y, processCell, true);
+      cell = this.getCell(x, y);
+      if(cell && cell >= lowest+2) {
+        this.cells[x][y] = lowest+1;
+        changed = true;
+        updateCount++;
+      }
     }
   }
-  console.log('crawled over ', n, ' cells.');
+  itrCount++;
+  if(changed) this.update();
 };
